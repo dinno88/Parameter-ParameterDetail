@@ -1,0 +1,58 @@
+package edu.satraining.case1.parameter.model;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import edu.satraining.case1.model.BaseModel;
+
+public class Parameter extends BaseModel{
+	private String paramCode;
+	private String paramName;
+	private String description;
+	
+	List<ParameterDetail> details = new ArrayList<ParameterDetail>();
+	
+	public Parameter() {
+		super();
+	}
+	
+	public Parameter(String paramCode) {
+		super();
+		this.paramCode = paramCode;
+	}
+	
+	public Parameter(String paramCode, String paramName, String description) {
+		super();
+		this.paramCode = paramCode;
+		this.paramName = paramName;
+		this.description = description;
+	}
+	public Parameter(String paramCode, String paramName, String description, String createdBy, Date createdTime, String updatedBy, Date updatedTime) {
+		super(createdBy, createdTime, updatedBy, updatedTime);
+		this.paramCode = paramCode;
+		this.paramName = paramName;
+		this.description = description;
+	}
+	public Parameter(String paramCode, String paramName, String description, String createdBy, Date createdTime) {
+		super(createdBy, createdTime);
+		this.paramCode = paramCode;
+		this.paramName = paramName;
+		this.description = description;
+	}
+	
+	public String getParamCode() {
+		return paramCode;
+	}
+	public void setParamCode(String paramCode) {
+		this.paramCode = paramCode;
+	}
+	
+	public String getParamName() {
+		return paramName;
+	}
+	public void setParamName(String paramName) {
+		this.paramName = paramName;
+	}
+	
+}

@@ -1,0 +1,11 @@
+package edu.satraining.case1.parameter.dao;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import edu.satraining.case1.dao.BaseDAO;
+import edu.satraining.case1.parameter.model.Parameter;
+
+public interface ParameterDAO extends BaseDAO{
+	
+}

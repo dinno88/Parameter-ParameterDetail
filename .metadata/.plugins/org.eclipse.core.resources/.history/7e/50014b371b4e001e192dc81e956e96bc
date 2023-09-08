@@ -1,0 +1,43 @@
+package edu.satraining.case1.parameter.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.logger;
+
+import edu.satraining.case1.parameter.model.Parameter;
+import edu.satraining.case1.parameter.model.ParameterDetail;
+
+public class ParameterDetailDAOImpl {
+	private static final logger logger = LogManager.getLogger(ParameterDetailDAOImpl.class);
+	private Connection con = null;
+	private PreparedStatement ps = null;
+	private ResultSet rs = null;
+	
+	public void setConnection(Connection con) {
+		this.con = con;
+	}
+	public int insert(ParameterDetail paramDetail) throws SQLException{
+		int result = 0;
+		String insertSql = "insert into parameter_detail(detail_code, detail_name, param_code, param_value, created_by, created_time)" +
+		"values (?, ?, ?, ?, ?, ?);";
+		ps = con.prepareStatement(insertSql);
+		ps.setString(1, paramDetail.getDetailCode());
+		ps.setString(2, paramDetail.getDetailName());
+		ps.setString(3, paramDetail.getParameter().getParamCode());
+		ps.setString(4, paramDetail.getDetailValue());
+		ps.setString(5, paramDetail.getCreatedBy());
+		ps.setDate(6, new java.sql.Date(paramDetail.getCreatedTime().getTime()));
+		Logger.info(ps.toString());
+		
+		result = ps.executeUpdate();
+		ps.close();
+		return result;
+	}
+
+}

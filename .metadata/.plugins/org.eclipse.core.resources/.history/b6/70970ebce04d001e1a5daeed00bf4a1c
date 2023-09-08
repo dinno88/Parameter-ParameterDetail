@@ -1,0 +1,106 @@
+package edu.satraining.case1.parameter.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import edu.satraining.case1.parameter.model.Parameter;
+
+public class ParameterDAOImpl implements ParameterDAO{
+	private static final java.util.logging.Logger Logger = LogManager.getLogger(ParameterDAOImpl.class);
+	private Connection con = null;
+	private PreparedStatement ps = null;
+	private ResultSet rs = null;
+	
+	public void setConnection(Connection con) {
+		this.con = con;
+	}
+	public int insert(Parameter parameter) throws SQLException{
+		int result = 0;
+		String insertSql = "insert into parameter(param_code, param_name, description, created_by, created_time)" +
+		"values(?, ?, ?, ?, ?);";
+		ps = con.prepareStatement(insertSql);
+		ps.setString(1, parameter.getParamCode());
+		ps.setString(2, parameter.getParamName());
+		ps.setString(3, parameter.getDescription());
+		ps.setString(4, parameter.getCreatedBy());
+		ps.setDate(5, new java.sql.Date(parameter.getCreatedTime().getTime()));
+		
+		Logger.info(ps.toString());
+		
+		result = ps.executeUpdate();
+		ps.close();
+		return result;
+	}
+	
+	public int update(Parameter parameter) throws SQLException{
+		int result = 0;
+		String updateSql = "Update " + " parameter" + " set" + " param_name = ?," + " description = ?," + 
+		" updated_by = ?," + " updated_time = ?," + " where " + " param_code = ?;";
+		
+		ps = con.prepareStatement(updateSql);
+		ps.setString(1, parameter.getParamName());
+		ps.setString(2, parameter.getDescription());
+		ps.setString(3, parameter.getUpdatedBy());
+		ps.setDate(4, new java.util.Date(parameter.getUpdatedTime().getTime()));
+		ps.setString(5, parameter.getParamCode());
+		
+		Logger.info(ps.toString());
+		
+		result = ps.executeUpdate();
+		ps.close();
+		return result;
+	}
+	
+	public int delete(Parameter parameter) throws SQLException{
+		int result = 0;
+		String deleteSql = "delete from parameter where param_code = ?";
+		ps = con.prepareStatement(deleteSql);
+		ps.setString(1, parameter.getParamCode());
+		
+		Logger.info(ps.toString());
+		
+		result = ps.executeUpdate();
+		ps.close();
+		return result;
+	}
+	public int deleteChild(Parameter parameter) throws SQLException{
+		int result = 0;
+		String deleteSql = "delete from parameter_detail where param_code = ?";
+		ps = con.prepareStatement(deleteSql);
+		ps.setString(1, parameter.getParamCode());
+		
+		Logger.info(ps.toString());
+		
+		result = ps.executeUpdate();
+		ps.close();
+		return result;
+	}
+	
+	public List<Parameter> search() throws SQLException{
+		String searchAllSql = "select * from parameter";
+		List<Parameter> result = new ArrayList<Parameter>();
+		Parameter parameter = null;
+		
+		ps = con.prepareStatement(searchAllSql);
+		Logger.info(ps.toString());
+		rs = ps.executeQuery();
+		while(rs.next()) {
+			parameter = new Parameter();
+			parameter.setParamCode(rs.getString("param_code"));
+			parameter.setParamName(rs.getString("param_name"));
+			parameter.setDescription(rs.getString("description"));
+			parameter.setCreatedBy(rs.getString("created_by"));
+			
+			
+		}
+	}
+	
+	
+}

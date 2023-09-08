@@ -1,0 +1,19 @@
+package edu.satraining.case1.parameter.model;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import edu.satraining.case1.model.BaseModel;
+
+public class Parameter extends BaseModel{
+	private String paramCode;
+	private String paramName;
+	private String description;
+	
+	List<ParameterDetail> details = new ArrayList<ParameterDetail>();
+	
+	public Parameter() {
+		super();
+	}
+}

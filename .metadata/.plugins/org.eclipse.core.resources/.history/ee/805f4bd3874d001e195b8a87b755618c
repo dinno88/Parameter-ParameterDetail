@@ -1,0 +1,30 @@
+package edu.satraining.case1.parameter.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import edu.satraining.case1.parameter.model.Parameter;
+
+public class ParameterDAOImpl implements ParameterDAO{
+	private static final Logger Logger = LogManager.getLogger(ParameterDAOImpl.class);
+	private Connection con = null;
+	private PreparedStatement ps = null;
+	private ResultSet rs = null;
+	
+	public void setConnection(Connection con) {
+		this.con = con;
+	}
+	public int insert(Parameter parameter) throws SQLException{
+		int result = 0;
+		String insertSql = "insert into parameter(param_code, param_name, description, created_by, created_time)" +
+		"values(?, ?, ?, ?, ?);";
+	}
+	
+}

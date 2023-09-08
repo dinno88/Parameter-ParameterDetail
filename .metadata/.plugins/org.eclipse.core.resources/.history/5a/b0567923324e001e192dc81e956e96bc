@@ -1,0 +1,360 @@
+package edu.satraining.lesson12.service;
+
+import java.sql.Connection;
+
+import edu.satraining.lesson12.dao.ParameterDAO;
+import edu.satraining.lesson12.dao.ParameterDetailDAO;
+import edu.satraining.lesson12.model.Parameter;
+import edu.satraining.lesson12.model.ParameterDetail;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class ParameterServiceImpl implements ParameterService {
+	private static Logger Logger = LogManager.getLogger(ParameterServiceImpl.class);
+	private ParameterDAO parameterDAO = new ParameterDAOImpl();
+	private ParameterDetailDAO parameterDetailDAO = new ParameterDetailDAOImpl();
+	private Connection con = null;
+	
+	@Override
+	public int addParameter(Parameter parameter) throws ServiceException
+	{
+		int result = 0;
+		
+		try {
+			con = C3P0DataSource.getConnection();
+			parameterDAO.setConnection(con);
+			parameterDetailDAO.setConnection(con);
+			con.setAutoCommit(false);
+			//insert header data
+			result = parameterDAO.insert(parameter);
+			
+			//insert detail data
+			for(ParameterDetail paramDetail : parameter.getDetails()) {
+				System.out.println(paramDetail);
+				result = parameterDetailDAO.insert(paramDetail);
+			}
+			con.commit();
+			con.setAutoCommit(true);
+		}
+		catch(SQLException e) {
+			try {
+				con.rollback();
+				con.setAutoCommit(true);
+				throw new ServiceException("Add new parameter failed", e);
+			}
+			catch (SQLException e2) {
+				Logger.error("error when rollback transaction...");
+						Logger.error(e2);
+			}
+		}
+		finally {
+			try {
+				con.close();
+			}
+			catch(SQLException e) {
+				Logger.error("error when close connection...");
+				Logger.error(e);
+			}
+		}
+		return result;
+	}
+	@Override
+	public int updateParameter (Parameter paramNew) throws ServiceException{
+		int result = 0;
+		Parameter paramCurrent = null;
+		List<ParameterDetail> detailsCurrent = null;
+	
+		try {
+			con = C3P0DataSource.getConnection();
+			parameterDAO.setConnection (con);
+			parameterDetailDAO.setConnection(con);
+			con.setAutoCommit(false);
+			
+			paramCurrent = parameterDAO.findById(paramNew.getParamCode()); 
+			if (!paramCurrent.equalsData(paramNew)) {
+				paramNew.setUpdatedBy ("Admin");
+				paramNew.setUpdatedTime(new java.util.Date(System.currentTimeMillis()));
+				
+				//update header data
+				result = parameterDAO.update(paramNew);
+			}
+			/* load parameter detail of current parameter */
+			detailsCurrent = parameterDetailDAO.search (paramNew.getParamCode());
+			
+			/* check for new parameter detail */
+			/* new parameter detail is parameter detail that exist on screen but not exist on database */ 
+			boolean exist;
+			ParameterDetail paramDetailCurrent = null;
+			for (ParameterDetail objectNew : paramNew.getDetails()) {
+				exist = false;
+				
+				for (ParameterDetail objectCurrent : detailsCurrent) {
+					if (objectNew.getDetailCode().equals(objectCurrent.getDetailCode())) {
+						exist = true;
+						paramDetailCurrent = objectCurrent;
+						break;
+					}
+				}
+				if (!exist) {
+					objectNew.setCreatedBy("Admin");
+					objectNew.setCreatedTime(new java.util.Date(System.currentTimeMillis()));
+					parameterDetailDAO.insert(objectNew);
+				}
+				else {
+//					ParameterDetail paramDetailCurrent = IterableUtils.find(detailsCurrent, new Predicate<ParameterDetail>() {
+//						@Override
+//						public boolean evaluate(ParameterDetail p) {
+//							return p.getDetailCode().equals(paramDetailNew.getDetailCode());
+//						}
+//					});
+					if (!objectNew.equalsData(paramDetailCurrent)) {
+						objectNew.setUpdatedBy ("Admin");
+						objectNew.setUpdatedTime (new java.util.Date(System.currentTimeMillis()));
+						parameterDetailDAO.update(objectNew);
+					}
+				}
+			}
+			/* check for deleted parameter detail */
+			/* deleted parameter detail is parameter detail that not exist on screen but exist on database */
+			for (ParameterDetail objectCurrent : detailsCurrent) {
+				exist = false;
+				
+				for (ParameterDetail objectNew: paramNew.getDetails()) {
+					if (objectCurrent.getDetailCode().equalsIgnoreCase(objectNew.getDetailCode())) {
+						exist = true; 
+						break;
+					}
+				}
+				if (!exist) {
+					parameterDetailDAO.delete(objectCurrent);
+				}
+			}
+			con.commit();
+			con.setAutoCommit(true);
+		}
+		catch (SQLException e) {
+			try {
+				con.rollback();
+				con.setAutoCommit(true);
+				throw new ServiceException("Update current Parameter failed", e);
+			}
+			catch (SQLException e2) {
+				Logger.error("error when rollback transaction..."); 
+				Logger.error(e2);
+			}
+		}
+		finally {
+			try {
+				con.close();
+			}
+			catch(SQLException e) {
+				Logger.error("error when close connection..."); 
+				Logger.error(e);
+			}
+		}
+		return result;
+	}
+	
+	public int deleteParameter(Parameter parameter) throws ServiceException{
+		int result = 0;
+		
+		try {
+			con = C3P0DataSource.getConnection();
+			parameterDAO.setConnection(con);
+			con.setAutoCommit(false);
+			
+			result = parameterDAO.deleteChild(parameter);
+			result = parameterDAO.delete(parameter);
+			con.commit();
+			con.setAutoCommit(true);
+		}
+		catch (SQLException e) {
+			try {
+				con.rollback();
+				throw new ServiceException("Delete existing parameter failed", e);
+			}
+			catch(SQLException e2){
+				Logger.error("error when rollback transaction..."); 
+				Logger.error(e2);
+			}
+		}
+		finally {
+			try {
+				con.close();
+			}
+			catch(SQLException e) {
+				Logger.error("error when close connection...");
+				Logger.error(e);
+			}
+		}
+		return result;
+	}
+	
+	public List<Parameter> searchParameter() throws ServiceException{
+		List<Parameter> result = null;
+		try {
+			con = C3P0DataSource.getConnection();
+			parameterDAO.setConnection(con);
+			con.setAutoCommit(false);
+			result = parameterDAO.search();
+			
+			con.commit();
+			con.setAutoCommit(true);
+		}
+		catch (SQLException e) {
+			try {
+				con.rollback();
+				throw new ServiceException("Search Parameter failed", e);
+			}
+			catch(SQLException e2){
+				Logger.error("error when rollback transaction..."); 
+				Logger.error(e2);
+			}
+		}
+		finally {
+			try {
+				con.close();
+			}
+			catch(SQLException e) {
+				Logger.error("error when close connection...");
+				Logger.error(e);
+			}
+		}
+		return result;
+	}
+	
+	@Override
+	public Parameter findById(String paramCode) throws ServiceException
+	{
+		Parameter result = null;
+
+		try
+		{
+			con = C3P0DataSource.getConnection();
+			parameterDAO.setConnection(con);
+			con.setAutoCommit(false);
+
+			result = parameterDAO.findById(paramCode);
+
+			con.commit();
+			con.setAutoCommit(true);
+		}
+		catch(SQLException e)
+		{
+			try
+			{
+				con.rollback();
+				throw new ServiceException("Find parameter using primary key failed.", e);
+			}
+			catch (SQLException e2)
+			{
+				Logger.error("error when rollback transaction...");
+				Logger.error(e2);
+			}
+		}
+		finally
+		{
+			try
+			{
+				con.close();
+			}
+			catch (SQLException e)
+			{
+				Logger.error("error when close conection...");
+				Logger.error(e);
+			}
+		}
+		return result;
+	}
+	
+	@Override
+	public ParameterDetail findDetailById(String detailCode) throws ServiceException
+	{
+		ParameterDetail result = null;
+		
+		try
+		{
+			con = C3P0DataSource.getConnection();
+			parameterDetailDAO.setConnection(con);
+			con.setAutoCommit(false);
+
+			result = parameterDetailDAO.findById(detailCode);
+
+			con.commit();
+			con.setAutoCommit(true);
+		}
+		catch(SQLException e)
+		{
+			try
+			{
+				con.rollback();
+				throw new ServiceException("Find parameter detail using primary key failed.", e);
+			}
+			catch (SQLException e2)
+			{
+				Logger.error("error when rollback transaction...");
+				Logger.error(e2);
+			}
+		}
+		finally
+		{
+			try
+			{
+				con.close();
+			}
+			catch (SQLException e)
+			{
+				Logger.error("error when close conection...");
+				Logger.error(e);
+			}
+		}
+		return result;
+	}
+	
+	@Override
+	public List<ParameterDetail> getChild(Parameter parameter) throws ServiceException
+	{
+		List<ParameterDetail> result = null;
+		
+		try
+		{
+			con = C3P0DataSource.getConnection();
+			parameterDetailDAO.setConnection(con);
+			con.setAutoCommit(false);
+
+			result = parameterDetailDAO.search(parameter.getParamCode());
+
+			con.commit();
+			con.setAutoCommit(true);
+		}
+		catch(SQLException e)
+		{
+			try
+			{
+				con.rollback();
+				throw new ServiceException("Search parameter detail failed.", e);
+			}
+			catch (SQLException e2)
+			{
+				Logger.error("error when rollback transaction...");
+				Logger.error(e2);
+			}
+		}
+		finally
+		{
+			try
+			{
+				con.close();
+			}
+			catch (SQLException e)
+			{
+				Logger.error("error when close conection...");
+				Logger.error(e);
+			}
+		}
+		return result;
+	}
+}
+
+	

@@ -1,0 +1,7 @@
+public ParameterDetail(String detailCode, String detailName, Parameter parameter, String detailValue, String createdBy, Date createdTime, String updatedBy, Date updatedTime) {
+		super(createdBy, createdTime, updatedBy, updatedTime);
+		this.detailCode = detailCode;
+		this.detailName = detailName;
+		this.parameter = parameter;
+		this.detailValue = detailValue;
+	}

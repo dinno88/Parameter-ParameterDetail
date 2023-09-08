@@ -1,0 +1,18 @@
+package edu.satraining.case1.parameter.model;
+
+import java.util.Date;
+
+public class ParameterDetail extends BaseModel {
+	private String detailCode;
+	private String detailName;
+	private Parameter parameter;
+	private String detailValue;
+	
+	public ParameterDetail() {
+		super();
+	}
+	public ParameterDetail(String detailCode) {
+		this.detailCode = detailCode;
+	}
+	
+}

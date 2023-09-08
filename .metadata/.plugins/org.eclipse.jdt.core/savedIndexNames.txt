@@ -1,0 +1,8 @@
+INDEX VERSION 1.131+C:\Users\Pak Dinno Obednego\Documents\sa_training\ParamAndParamDetail\.metadata\.plugins\org.eclipse.jdt.core
+140455680.index
+1871892788.index
+1865797976.index
+950653667.index
+449013271.index
+1096279865.index
+761443928.index
